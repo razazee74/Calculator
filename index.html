@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Mini Calculator</title>
+<style>
+  :root{
+    --bg:#0e0e0e;
+    --btn:#2b2b2b;
+    --btn-alt:#3a3a3a;
+    --text:#f3f3f3;
+    --accent:#ff8c2a; /* equals */
+    --muted:#9d9d9d;  /* secondary text */
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    min-height:100vh;
+    background:var(--bg);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    color:var(--text);
+  }
+
+  /* Calculator card - small/compact */
+  .calc{
+    width: 340px;            /* halka chhota */
+    padding: 18px 16px 20px;
+    border-radius: 18px;
+    background: #111;
+    box-shadow: 0 10px 30px rgba(0,0,0,.35);
+  }
+
+  .display{
+    height: 88px;
+    padding: 10px 12px;
+    border-radius: 12px;
+    background: #141414;
+    box-shadow: inset 0 0 0 1px #1f1f1f;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:flex-end;
+    gap:6px;
+    overflow:hidden;
+  }
+  .exp{
+    font-size: 14px;
+    color: var(--muted);
+    letter-spacing:.5px;
+    width:100%;
+    text-align:right;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+  .val{
+    font-size: 32px;
+    line-height:1.2;
+    font-weight: 600;
+    width:100%;
+    text-align:right;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+
+  .grid{
+    margin-top: 14px;
+    display:grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+  }
+
+  /* round buttons */
+  .btn{
+    height:64px; width:64px;
+    border-radius: 999px;
+    background: var(--btn);
+    border:none;
+    color:var(--text);
+    font-size:22px;
+    font-weight:600;
+    display:flex; align-items:center; justify-content:center;
+    cursor:pointer;
+    transition: transform .05s ease, filter .15s ease, background .15s ease;
+    user-select:none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .btn:active{ transform: scale(.97); filter: brightness(1.1); }
+
+  .btn.op{ background: var(--btn-alt); }
+  .btn.ac, .btn.perc, .btn.back { color:#fff; background:#333; font-weight:700; }
+  .btn.eq{ background: var(--accent); color:#111; }
+  .btn.dot{ font-weight:700; }
+  .btn.zerozero{ font-size:20px; }
+
+  /* make the first row look like your screenshot */
+  .row-1 .btn{ background:#323232; }
+
+  /* small screens */
+  @media (max-width:360px){
+    .calc{ width: 300px; }
+    .btn{ height:58px; width:58px; font-size:20px; }
+    .val{ font-size:28px; }
+  }
+</style>
+</head>
+<body>
+  <div class="calc" role="application" aria-label="Calculator">
+    <div class="display" aria-live="polite">
+      <div class="exp" id="exp">&nbsp;</div>
+      <div class="val" id="val">0</div>
+    </div>
+
+    <div class="grid">
+      <!-- row 1 -->
+      <button class="btn ac row-1" data-act="AC">AC</button>
+      <button class="btn perc row-1" data-act="%">%</button>
+      <button class="btn back row-1" data-act="BACK">⌫</button>
+      <button class="btn op row-1" data-val="÷">÷</button>
+
+      <!-- row 2 -->
+      <button class="btn" data-val="7">7</button>
+      <button class="btn" data-val="8">8</button>
+      <button class="btn" data-val="9">9</button>
+      <button class="btn op" data-val="×">×</button>
+
+      <!-- row 3 -->
+      <button class="btn" data-val="4">4</button>
+      <button class="btn" data-val="5">5</button>
+      <button class="btn" data-val="6">6</button>
+      <button class="btn op" data-val="−">−</button>
+
+      <!-- row 4 -->
+      <button class="btn" data-val="1">1</button>
+      <button class="btn" data-val="2">2</button>
+      <button class="btn" data-val="3">3</button>
+      <button class="btn op" data-val="+">+</button>
+
+      <!-- row 5 -->
+      <button class="btn zerozero" data-val="00">00</button>
+      <button class="btn" data-val="0">0</button>
+      <button class="btn dot" data-val=".">.</button>
+      <button class="btn eq" data-act="=">=</button>
+    </div>
+  </div>
+
+<script>
+  const expEl = document.getElementById('exp');
+  const valEl = document.getElementById('val');
+
+  const ops = new Set(['+','−','×','÷']);
+
+  let expr = '';            // expression shown on small line
+  let current = '0';        // current input number
+  let lastPressedOp = false;
+
+  function update(){
+    expEl.textContent = expr || '\u00A0';
+    valEl.textContent = current || '0';
+  }
+
+  function clearAll(){
+    expr = '';
+    current = '0';
+    lastPressedOp = false;
+    update();
+  }
+
+  function backspace(){
+    if (current.length > 1){
+      current = current.slice(0, -1);
+    } else {
+      current = '0';
+    }
+    lastPressedOp = false;
+    update();
+  }
+
+  function appendDigit(d){
+    // handle "00"
+    if (d === '00'){
+      if (current !== '0') current += '00';
+      update(); return;
+    }
+    if (d === '.'){
+      if (!current.includes('.')) current += '.';
+      update(); return;
+    }
+    if (current === '0') current = d;
+    else current += d;
+    lastPressedOp = false;
+    update();
+  }
+
+  function applyPercent(){
+    // convert only the current number to percent
+    const num = parseFloat(current || '0');
+    current = (num/100).toString();
+    update();
+  }
+
+  function pushOperator(op){
+    // if just pressed operator, replace it
+    if (lastPressedOp){
+      expr = expr.slice(0, -1) + op;
+    } else {
+      expr += (current + op);
+      current = '0';
+      lastPressedOp = true;
+    }
+    update();
+  }
+
+  function sanitize(s){
+    // replace pretty ops to JS ops, keep digits . and operators
+    return s
+      .replace(/×/g,'*')
+      .replace(/÷/g,'/')
+      .replace(/−/g,'-');
+  }
+
+  function evaluateNow(){
+    let toEval = expr + current;
+    if (!toEval) return;
+    // prevent trailing operator
+    if (ops.has(toEval.slice(-1))) toEval = toEval.slice(0,-1);
+
+    try{
+      const safe = sanitize(toEval);
+      // allow only digits, operators, dot, parentheses (though we don't use them)
+      if (!/^[0-9+\-*/. ]+$/.test(safe)) throw new Error('invalid');
+      let ans = Function(`"use strict";return (${safe})`)();
+      // fix floating errors
+      ans = Math.round((ans + Number.EPSILON) * 1e12)/1e12;
+      expr = '';
+      current = ans.toString();
+      lastPressedOp = false;
+      update();
+    }catch(e){
+      current = 'Error';
+      expr = '';
+      lastPressedOp = false;
+      update();
+      setTimeout(clearAll, 900);
+    }
+  }
+
+  // Button events
+  document.addEventListener('click', (e)=>{
+    const b = e.target.closest('.btn');
+    if(!b) return;
+
+    const val = b.getAttribute('data-val');
+    const act = b.getAttribute('data-act');
+
+    if (val){
+      if (ops.has(val)) pushOperator(val);
+      else appendDigit(val);
+      return;
+    }
+    if (act === 'AC') return clearAll();
+    if (act === 'BACK') return backspace();
+    if (act === '%') return applyPercent();
+    if (act === '=') return evaluateNow();
+  });
+
+  // Basic keyboard support (optional)
+  document.addEventListener('keydown', (e)=>{
+    const k = e.key;
+    if (/\d/.test(k)) return appendDigit(k);
+    if (k === '.') return appendDigit('.');
+    if (k === 'Backspace') return backspace();
+    if (k === 'Escape') return clearAll();
+    if (k === 'Enter' || k === '=') return evaluateNow();
+    if (k === '+' || k === '-' || k === '*' || k === '/'){
+      const map = {'+':'+','-':'−','*':'×','/':'÷'};
+      return pushOperator(map[k]);
+    }
+    if (k === '%') return applyPercent();
+  });
+
+  update();
+</script>
+</body>
+</html>
