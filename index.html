@@ -1,263 +1,237 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Mini Calculator</title>
-<style>
-  :root{
-    --bg:#0e0e0e;
-    --btn:#2b2b2b;
-    --btn-alt:#3a3a3a;
-    --text:#f3f3f3;
-    --accent:#ff8c2a;
-    --muted:#9d9d9d;
-    --special:#d1ffb3; /* display text color */
-  }
-  *{box-sizing:border-box}
-  body{
-    margin:0;
-    min-height:100vh;
-    background:var(--bg);
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-    color:var(--text);
-  }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Calculator with Animation</title>
+  <style>
+    body {
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: #101820;
+      overflow: hidden;
+      font-family: Arial, sans-serif;
+    }
 
-  .calc{
-    width: 280px;   /* smaller size */
-    padding: 14px 12px 16px;
-    border-radius: 16px;
-    background: #111;
-    box-shadow: 0 6px 22px rgba(0,0,0,.35);
-  }
+    .container {
+      text-align: center;
+      position: relative;
+    }
 
-  .display{
-    height: 72px;
-    padding: 8px 10px;
-    border-radius: 10px;
-    background: #141414;
-    box-shadow: inset 0 0 0 1px #1f1f1f;
-    display:flex;
-    flex-direction:column;
-    justify-content:center;
-    align-items:flex-end;
-    gap:4px;
-    overflow:hidden;
-  }
-  .exp{
-    font-size: 12px;
-    color: var(--muted);
-    width:100%;
-    text-align:right;
-    white-space:nowrap;
-    overflow:hidden;
-    text-overflow:ellipsis;
-  }
-  .val{
-    font-size: 26px;
-    font-weight: 600;
-    width:100%;
-    text-align:right;
-    color: var(--special);
-    white-space:nowrap;
-    overflow:hidden;
-    text-overflow:ellipsis;
-  }
+    /* Calculator Compact */
+    .calculator {
+      width: 220px;
+      padding: 12px;
+      background: #2b2b2b;
+      border-radius: 12px;
+      box-shadow: 0px 0px 18px rgba(0,0,0,0.5);
+      margin-top: 70px;
+    }
 
-  .grid{
-    margin-top: 12px;
-    display:grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 12px;
-  }
+    .display {
+      width: 100%;
+      height: 40px;
+      margin-bottom: 10px;
+      text-align: right;
+      font-size: 20px;
+      padding: 6px;
+      border-radius: 8px;
+      border: none;
+      background: #e0e0e0;
+      color: #111;
+    }
 
-  .btn{
-    height:54px; width:54px;
-    border-radius: 999px;
-    background: var(--btn);
-    border:none;
-    color:var(--text);
-    font-size:20px;
-    font-weight:600;
-    display:flex; align-items:center; justify-content:center;
-    cursor:pointer;
-    transition: transform .05s ease, background .15s ease, color .15s ease;
-    user-select:none;
-    -webkit-tap-highlight-color: transparent;
-  }
-  .btn:active{ transform: scale(.96); filter: brightness(1.1); }
+    .buttons {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px;
+    }
 
-  .btn.op{ background: var(--btn-alt); }
-  .btn.ac, .btn.perc, .btn.back { background:#333; }
-  .btn.eq{ background: var(--accent); color:#111; }
+    button {
+      padding: 12px;
+      font-size: 16px;
+      border: none;
+      border-radius: 6px;
+      background: #444;
+      color: white;
+      cursor: pointer;
+      transition: 0.2s;
+    }
 
-  /* X button ON style */
-  .btn.toggle-on{ background:#fff; color:#111; }
-</style>
+    button:hover {
+      background: #666;
+    }
+
+    /* Hello World toggle button (X) */
+    .toggle {
+      background: #ff5555;
+    }
+    .toggle.active {
+      background: #55ff55;
+      color: black;
+      font-weight: bold;
+    }
+
+    /* Sparkle Name Button */
+    .name-btn {
+      position: absolute;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #00ccff;
+      color: black;
+      font-size: 14px;
+      padding: 5px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    /* Name Animation */
+    .letter {
+      position: absolute;
+      font-size: 40px;
+      font-weight: bold;
+      color: #ccff33;
+      text-shadow: 0 0 8px #ccff33, 0 0 15px #99ff66;
+      opacity: 0;
+      transition: all 2.5s ease-in-out;
+    }
+
+    .final-name {
+      position: absolute;
+      top: 50px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 42px;
+      font-weight: bold;
+      color: #ccff33;
+      text-shadow: 0 0 10px #ccff33, 0 0 20px #99ff66;
+      opacity: 0;
+      animation: glow 1s infinite alternate;
+    }
+
+    .underline {
+      width: 0;
+      height: 4px;
+      background: #ccff33;
+      box-shadow: 0 0 6px #99ff66;
+      margin: 0 auto;
+      transition: width 1s ease;
+    }
+
+    @keyframes glow {
+      from { text-shadow: 0 0 8px #ccff33, 0 0 16px #99ff66; }
+      to { text-shadow: 0 0 16px #ccff33, 0 0 28px #99ff66; }
+    }
+  </style>
 </head>
 <body>
-  <div class="calc">
-    <div class="display">
-      <div class="exp" id="exp">&nbsp;</div>
-      <div class="val" id="val">0</div>
-    </div>
+  <div class="container">
+    <button class="name-btn" onclick="animateName()">Show Name</button>
 
-    <div class="grid">
-      <button class="btn ac" data-act="AC">AC</button>
-      <button class="btn perc" data-act="%">%</button>
-      <button class="btn back" data-act="BACK">⌫</button>
-      <button class="btn op" data-val="÷">÷</button>
+    <div id="name-area"></div>
+    <div id="final-name" class="final-name"></div>
+    <div id="underline" class="underline"></div>
 
-      <button class="btn" data-val="7">7</button>
-      <button class="btn" data-val="8">8</button>
-      <button class="btn" data-val="9">9</button>
-      <button class="btn op" data-val="×">×</button>
+    <div class="calculator">
+      <input type="text" class="display" id="display" disabled>
+      <div class="buttons">
+        <button onclick="clearDisplay()">C</button>
+        <button onclick="appendValue('/')">/</button>
+        <button onclick="appendValue('*')">*</button>
+        <button onclick="delChar()">DEL</button>
 
-      <button class="btn" data-val="4">4</button>
-      <button class="btn" data-val="5">5</button>
-      <button class="btn" data-val="6">6</button>
-      <button class="btn op" data-val="−">−</button>
+        <button onclick="appendValue('7')">7</button>
+        <button onclick="appendValue('8')">8</button>
+        <button onclick="appendValue('9')">9</button>
+        <button onclick="appendValue('-')">-</button>
 
-      <button class="btn" data-val="1">1</button>
-      <button class="btn" data-val="2">2</button>
-      <button class="btn" data-val="3">3</button>
-      <button class="btn op" data-val="+">+</button>
+        <button onclick="appendValue('4')">4</button>
+        <button onclick="appendValue('5')">5</button>
+        <button onclick="appendValue('6')">6</button>
+        <button onclick="appendValue('+')">+</button>
 
-      <!-- Replaced 00 with X -->
-      <button class="btn toggle" id="trickBtn">X</button>
-      <button class="btn" data-val="0">0</button>
-      <button class="btn" data-val=".">.</button>
-      <button class="btn eq" data-act="=">=</button>
+        <button onclick="appendValue('1')">1</button>
+        <button onclick="appendValue('2')">2</button>
+        <button onclick="appendValue('3')">3</button>
+        <button onclick="calculate()">=</button>
+
+        <button onclick="appendValue('0')">0</button>
+        <button onclick="appendValue('.')">.</button>
+        <button class="toggle" id="toggleBtn" onclick="toggleHello()">X</button>
+      </div>
     </div>
   </div>
 
-<script>
-  const expEl = document.getElementById('exp');
-  const valEl = document.getElementById('val');
-  const trickBtn = document.getElementById('trickBtn');
+  <script>
+    const display = document.getElementById('display');
+    const toggleBtn = document.getElementById('toggleBtn');
+    let helloMode = false;
 
-  const ops = new Set(['+','−','×','÷']);
-
-  let expr = '';
-  let current = '0';
-  let lastPressedOp = false;
-  let trickMode = false; // X button mode
-
-  function update(){
-    expEl.textContent = expr || '\u00A0';
-    valEl.textContent = current || '0';
-  }
-
-  function clearAll(){
-    expr = '';
-    current = '0';
-    lastPressedOp = false;
-    update();
-  }
-
-  function backspace(){
-    if (current.length > 1){
-      current = current.slice(0, -1);
-    } else {
-      current = '0';
-    }
-    lastPressedOp = false;
-    update();
-  }
-
-  function appendDigit(d){
-    if (d === '.'){
-      if (!current.includes('.')) current += '.';
-      update(); return;
-    }
-    if (current === '0') current = d;
-    else current += d;
-    lastPressedOp = false;
-    update();
-  }
-
-  function applyPercent(){
-    const num = parseFloat(current || '0');
-    current = (num/100).toString();
-    update();
-  }
-
-  function pushOperator(op){
-    if (lastPressedOp){
-      expr = expr.slice(0, -1) + op;
-    } else {
-      expr += (current + op);
-      current = '0';
-      lastPressedOp = true;
-    }
-    update();
-  }
-
-  function sanitize(s){
-    return s
-      .replace(/×/g,'*')
-      .replace(/÷/g,'/')
-      .replace(/−/g,'-');
-  }
-
-  function evaluateNow(){
-    if (trickMode){
-      current = "Hello World";
-      expr = '';
-      update();
-      return;
+    function clearDisplay() {
+      display.value = '';
     }
 
-    let toEval = expr + current;
-    if (!toEval) return;
-    if (ops.has(toEval.slice(-1))) toEval = toEval.slice(0,-1);
-
-    try{
-      const safe = sanitize(toEval);
-      if (!/^[0-9+\-*/. ]+$/.test(safe)) throw new Error('invalid');
-      let ans = Function(`"use strict";return (${safe})`)();
-      ans = Math.round((ans + Number.EPSILON) * 1e12)/1e12;
-      expr = '';
-      current = ans.toString();
-      lastPressedOp = false;
-      update();
-    }catch(e){
-      current = 'Error';
-      expr = '';
-      update();
-      setTimeout(clearAll, 800);
-    }
-  }
-
-  document.addEventListener('click', (e)=>{
-    const b = e.target.closest('.btn');
-    if(!b) return;
-
-    const val = b.getAttribute('data-val');
-    const act = b.getAttribute('data-act');
-
-    // Trick toggle button
-    if (b === trickBtn){
-      trickMode = !trickMode;
-      trickBtn.classList.toggle('toggle-on', trickMode);
-      return;
+    function delChar() {
+      display.value = display.value.slice(0, -1);
     }
 
-    if (val){
-      if (ops.has(val)) pushOperator(val);
-      else appendDigit(val);
-      return;
+    function appendValue(val) {
+      display.value += val;
     }
-    if (act === 'AC') return clearAll();
-    if (act === 'BACK') return backspace();
-    if (act === '%') return applyPercent();
-    if (act === '=') return evaluateNow();
-  });
 
-  update();
-</script>
+    function calculate() {
+      if (helloMode) {
+        display.value = 'Hello World';
+      } else {
+        try {
+          display.value = eval(display.value);
+        } catch {
+          display.value = 'Error';
+        }
+      }
+    }
+
+    function toggleHello() {
+      helloMode = !helloMode;
+      toggleBtn.classList.toggle('active');
+    }
+
+    /* Name Animation */
+    function animateName() {
+      const letters = ['A','K','A','N','S','H'];
+      const nameArea = document.getElementById('name-area');
+      nameArea.innerHTML = '';
+      document.getElementById('final-name').style.opacity = 0;
+      document.getElementById('underline').style.width = '0';
+
+      letters.forEach((l, i) => {
+        const span = document.createElement('span');
+        span.className = 'letter';
+        span.textContent = l;
+
+        // random start position
+        span.style.top = Math.random()*100 + '%';
+        span.style.left = Math.random()*100 + '%';
+
+        nameArea.appendChild(span);
+
+        setTimeout(() => {
+          span.style.top = '50px';
+          span.style.left = 50 + i*30 - 80 + 'px';
+          span.style.opacity = 1;
+        }, 50);
+      });
+
+      setTimeout(() => {
+        document.getElementById('final-name').textContent = 'AKANSH';
+        document.getElementById('final-name').style.opacity = 1;
+        document.getElementById('underline').style.width = '200px';
+      }, 3000);
+    }
+  </script>
 </body>
 </html>
