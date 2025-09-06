@@ -2,69 +2,39 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Calculator with AKANSH</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Calculator</title>
   <style>
     body {
       margin: 0;
       font-family: Arial, sans-serif;
-      background: linear-gradient(135deg, #f0fff4, #e6ffe6);
+      background: url("myphoto.jpg") no-repeat center center fixed;
+      background-size: cover;
       display: flex;
       justify-content: center;
       align-items: center;
       height: 100vh;
       flex-direction: column;
     }
-    .name-container {
-      text-align: center;
-      margin-bottom: 20px;
-      position: relative;
-      height: 60px; /* jagah fix rakhi hai */
-    }
-    .letter {
-      font-size: 2.5em;
-      font-weight: bold;
-      color: #32cd32;
-      text-shadow: 0 0 10px #adff2f, 0 0 20px #7fff00;
-      opacity: 0;
-      position: absolute;
-      transition: all 1s ease-in-out;
-    }
-    .final {
-      position: relative;
-      display: inline-block;
-      letter-spacing: 5px;
-      opacity: 1 !important;
-    }
-    .underline {
-      height: 3px;
-      background: #32cd32;
-      margin-top: 5px;
-      box-shadow: 0 0 8px #7fff00;
-      animation: glow 1s infinite alternate;
-    }
-    @keyframes glow {
-      from { box-shadow: 0 0 5px #7fff00; }
-      to { box-shadow: 0 0 15px #32cd32; }
-    }
     .calculator {
-      width: 260px;
-      background: #2c2c2c;
-      border-radius: 15px;
+      width: 300px;
+      background: rgba(255, 255, 255, 0.9);
       padding: 20px;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.4);
-      text-align: center;
+      border-radius: 15px;
+      box-shadow: 0px 4px 10px rgba(0,0,0,0.2);
     }
     .display {
       width: 100%;
       height: 50px;
       margin-bottom: 15px;
-      font-size: 1.5em;
       text-align: right;
-      padding: 5px 10px;
-      border: none;
-      border-radius: 10px;
-      background: #f9fff9;
-      color: #333;
+      padding: 10px;
+      font-size: 22px;
+      border: 2px solid #ccc;
+      border-radius: 8px;
+      box-sizing: border-box;
+      background: #fff;
+      overflow-x: auto;
     }
     .buttons {
       display: grid;
@@ -72,139 +42,104 @@
       gap: 10px;
     }
     button {
-      padding: 15px;
-      font-size: 1.2em;
+      padding: 20px;
+      font-size: 18px;
       border: none;
       border-radius: 10px;
+      background: #f0f0f0;
       cursor: pointer;
-      background: #444;
-      color: #fff;
-      transition: 0.3s;
+      transition: 0.2s;
     }
     button:hover {
-      background: #666;
+      background: #ddd;
     }
-    .special {
-      background: #ff4444;
-    }
-    .special.active {
-      background: #ff2222;
-      color: #fff;
+    #namePopup {
+      position: absolute;
+      top: 20px;
+      font-size: 22px;
+      font-weight: bold;
+      color: red;
+      background: rgba(255,255,255,0.8);
+      padding: 8px 15px;
+      border-radius: 8px;
+      display: none;
     }
   </style>
 </head>
 <body>
+  <div id="namePopup">Hello, World!</div>
+  <div class="calculator">
+    <input type="text" id="display" class="display" disabled>
+    <div class="buttons">
+      <button onclick="appendValue('7')">7</button>
+      <button onclick="appendValue('8')">8</button>
+      <button onclick="appendValue('9')">9</button>
+      <button onclick="appendValue('/')">/</button>
 
-<div class="name-container" id="nameBox">
-  <!-- Letters will appear here -->
-</div>
+      <button onclick="appendValue('4')">4</button>
+      <button onclick="appendValue('5')">5</button>
+      <button onclick="appendValue('6')">6</button>
+      <button onclick="appendValue('*')">*</button>
 
-<div class="calculator">
-  <input type="text" class="display" id="display" disabled>
-  <div class="buttons">
-    <button>C</button>
-    <button>/</button>
-    <button>*</button>
-    <button>DEL</button>
-    <button>7</button>
-    <button>8</button>
-    <button>9</button>
-    <button>-</button>
-    <button>4</button>
-    <button>5</button>
-    <button>6</button>
-    <button>+</button>
-    <button>1</button>
-    <button>2</button>
-    <button>3</button>
-    <button>=</button>
-    <button>0</button>
-    <button>.</button>
-    <button class="special" id="xBtn">X</button>
-    <button id="piBtn">π</button>
+      <button onclick="appendValue('1')">1</button>
+      <button onclick="appendValue('2')">2</button>
+      <button onclick="appendValue('3')">3</button>
+      <button onclick="appendValue('-')">-</button>
+
+      <button onclick="appendValue('0')">0</button>
+      <button onclick="appendValue('.')">.</button>
+      <button onclick="calculateResult()">=</button>
+      <button onclick="appendValue('+')">+</button>
+
+      <button onclick="clearDisplay()">C</button>
+      <button onclick="appendValue('%')">%</button>
+      <button onclick="appendValue('(')">(</button>
+      <button onclick="appendValue(')')">)</button>
+
+      <button onclick="appendValue('**')">^</button>
+      <button onclick="appendValue('√')">√</button>
+      <button onclick="appendValue('π')">π</button>
+      <button onclick="deleteLast()">DEL</button>
+    </div>
   </div>
-</div>
 
-<script>
-const display = document.getElementById("display");
-const buttons = document.querySelectorAll(".buttons button");
-const xBtn = document.getElementById("xBtn");
-const piBtn = document.getElementById("piBtn");
-let helloMode = false;
+  <script>
+    const display = document.getElementById("display");
+    const namePopup = document.getElementById("namePopup");
 
-buttons.forEach(btn => {
-  btn.addEventListener("click", () => {
-    const val = btn.innerText;
-    if (val === "=") {
+    function appendValue(value) {
+      if (value === 'π') {
+        showName("My Name");
+      } else if (value === '√') {
+        display.value += "**0.5";
+      } else {
+        display.value += value;
+      }
+    }
+
+    function clearDisplay() {
+      display.value = "";
+    }
+
+    function deleteLast() {
+      display.value = display.value.slice(0, -1);
+    }
+
+    function calculateResult() {
       try {
-        if (helloMode) {
-          display.value = "Hello World";
-        } else {
-          display.value = eval(display.value.replace("π", Math.PI));
-        }
+        display.value = eval(display.value.replace(/π/g, Math.PI));
       } catch {
         display.value = "Error";
       }
-    } else if (val === "X") {
-      helloMode = !helloMode;
-      xBtn.classList.toggle("active", helloMode);
-    } else if (val !== "π") {
-      if (val === "C") {
-        display.value = "";
-      } else if (val === "DEL") {
-        display.value = display.value.slice(0, -1);
-      } else {
-        display.value += val;
-      }
     }
-  });
-});
 
-// AKANSH Animation on π
-piBtn.addEventListener("click", () => {
-  const nameBox = document.getElementById("nameBox");
-  nameBox.innerHTML = ""; // clear pehle se
-
-  const word = "AKANSH";
-  const directions = [
-    {x: "-200px", y: "0"},
-    {x: "200px", y: "0"},
-    {x: "0", y: "-150px"},
-    {x: "0", y: "200px"},
-    {x: "-250px", y: "100px"},
-    {x: "250px", y: "-100px"}
-  ];
-
-  word.split("").forEach((ch, i) => {
-    let span = document.createElement("span");
-    span.innerText = ch;
-    span.className = "letter";
-    nameBox.appendChild(span);
-
-    // start pos
-    span.style.transform = `translate(${directions[i].x}, ${directions[i].y})`;
-
-    setTimeout(() => {
-      span.style.opacity = "1";
-      span.style.transform = "translate(0,0)";
-      span.style.position = "relative";
-      span.classList.add("final");
-    }, 500 + i*400);
-  });
-
-  // underline after word
-  setTimeout(() => {
-    const underline = document.createElement("div");
-    underline.className = "underline";
-    nameBox.appendChild(underline);
-  }, word.length*400 + 1000);
-
-  // gayab after 3 sec
-  setTimeout(() => {
-    nameBox.innerHTML = "";
-  }, 4000);
-});
-</script>
-
+    function showName(name) {
+      namePopup.innerText = name;
+      namePopup.style.display = "block";
+      setTimeout(() => {
+        namePopup.style.display = "none";
+      }, 3000);
+    }
+  </script>
 </body>
 </html>
