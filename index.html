@@ -10,8 +10,9 @@
     --btn:#2b2b2b;
     --btn-alt:#3a3a3a;
     --text:#f3f3f3;
-    --accent:#ff8c2a; /* equals */
-    --muted:#9d9d9d;  /* secondary text */
+    --accent:#ff8c2a;
+    --muted:#9d9d9d;
+    --special:#d1ffb3; /* display text color */
   }
   *{box-sizing:border-box}
   body{
@@ -25,32 +26,30 @@
     color:var(--text);
   }
 
-  /* Calculator card - small/compact */
   .calc{
-    width: 340px;            /* halka chhota */
-    padding: 18px 16px 20px;
-    border-radius: 18px;
+    width: 280px;   /* smaller size */
+    padding: 14px 12px 16px;
+    border-radius: 16px;
     background: #111;
-    box-shadow: 0 10px 30px rgba(0,0,0,.35);
+    box-shadow: 0 6px 22px rgba(0,0,0,.35);
   }
 
   .display{
-    height: 88px;
-    padding: 10px 12px;
-    border-radius: 12px;
+    height: 72px;
+    padding: 8px 10px;
+    border-radius: 10px;
     background: #141414;
     box-shadow: inset 0 0 0 1px #1f1f1f;
     display:flex;
     flex-direction:column;
     justify-content:center;
     align-items:flex-end;
-    gap:6px;
+    gap:4px;
     overflow:hidden;
   }
   .exp{
-    font-size: 14px;
+    font-size: 12px;
     color: var(--muted);
-    letter-spacing:.5px;
     width:100%;
     text-align:right;
     white-space:nowrap;
@@ -58,93 +57,79 @@
     text-overflow:ellipsis;
   }
   .val{
-    font-size: 32px;
-    line-height:1.2;
+    font-size: 26px;
     font-weight: 600;
     width:100%;
     text-align:right;
+    color: var(--special);
     white-space:nowrap;
     overflow:hidden;
     text-overflow:ellipsis;
   }
 
   .grid{
-    margin-top: 14px;
+    margin-top: 12px;
     display:grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 14px;
+    gap: 12px;
   }
 
-  /* round buttons */
   .btn{
-    height:64px; width:64px;
+    height:54px; width:54px;
     border-radius: 999px;
     background: var(--btn);
     border:none;
     color:var(--text);
-    font-size:22px;
+    font-size:20px;
     font-weight:600;
     display:flex; align-items:center; justify-content:center;
     cursor:pointer;
-    transition: transform .05s ease, filter .15s ease, background .15s ease;
+    transition: transform .05s ease, background .15s ease, color .15s ease;
     user-select:none;
     -webkit-tap-highlight-color: transparent;
   }
-  .btn:active{ transform: scale(.97); filter: brightness(1.1); }
+  .btn:active{ transform: scale(.96); filter: brightness(1.1); }
 
   .btn.op{ background: var(--btn-alt); }
-  .btn.ac, .btn.perc, .btn.back { color:#fff; background:#333; font-weight:700; }
+  .btn.ac, .btn.perc, .btn.back { background:#333; }
   .btn.eq{ background: var(--accent); color:#111; }
-  .btn.dot{ font-weight:700; }
-  .btn.zerozero{ font-size:20px; }
 
-  /* make the first row look like your screenshot */
-  .row-1 .btn{ background:#323232; }
-
-  /* small screens */
-  @media (max-width:360px){
-    .calc{ width: 300px; }
-    .btn{ height:58px; width:58px; font-size:20px; }
-    .val{ font-size:28px; }
-  }
+  /* X button ON style */
+  .btn.toggle-on{ background:#fff; color:#111; }
 </style>
 </head>
 <body>
-  <div class="calc" role="application" aria-label="Calculator">
-    <div class="display" aria-live="polite">
+  <div class="calc">
+    <div class="display">
       <div class="exp" id="exp">&nbsp;</div>
       <div class="val" id="val">0</div>
     </div>
 
     <div class="grid">
-      <!-- row 1 -->
-      <button class="btn ac row-1" data-act="AC">AC</button>
-      <button class="btn perc row-1" data-act="%">%</button>
-      <button class="btn back row-1" data-act="BACK">⌫</button>
-      <button class="btn op row-1" data-val="÷">÷</button>
+      <button class="btn ac" data-act="AC">AC</button>
+      <button class="btn perc" data-act="%">%</button>
+      <button class="btn back" data-act="BACK">⌫</button>
+      <button class="btn op" data-val="÷">÷</button>
 
-      <!-- row 2 -->
       <button class="btn" data-val="7">7</button>
       <button class="btn" data-val="8">8</button>
       <button class="btn" data-val="9">9</button>
       <button class="btn op" data-val="×">×</button>
 
-      <!-- row 3 -->
       <button class="btn" data-val="4">4</button>
       <button class="btn" data-val="5">5</button>
       <button class="btn" data-val="6">6</button>
       <button class="btn op" data-val="−">−</button>
 
-      <!-- row 4 -->
       <button class="btn" data-val="1">1</button>
       <button class="btn" data-val="2">2</button>
       <button class="btn" data-val="3">3</button>
       <button class="btn op" data-val="+">+</button>
 
-      <!-- row 5 -->
-      <button class="btn zerozero" data-val="00">00</button>
+      <!-- Replaced 00 with X -->
+      <button class="btn toggle" id="trickBtn">X</button>
       <button class="btn" data-val="0">0</button>
-      <button class="btn dot" data-val=".">.</button>
+      <button class="btn" data-val=".">.</button>
       <button class="btn eq" data-act="=">=</button>
     </div>
   </div>
@@ -152,12 +137,14 @@
 <script>
   const expEl = document.getElementById('exp');
   const valEl = document.getElementById('val');
+  const trickBtn = document.getElementById('trickBtn');
 
   const ops = new Set(['+','−','×','÷']);
 
-  let expr = '';            // expression shown on small line
-  let current = '0';        // current input number
+  let expr = '';
+  let current = '0';
   let lastPressedOp = false;
+  let trickMode = false; // X button mode
 
   function update(){
     expEl.textContent = expr || '\u00A0';
@@ -182,11 +169,6 @@
   }
 
   function appendDigit(d){
-    // handle "00"
-    if (d === '00'){
-      if (current !== '0') current += '00';
-      update(); return;
-    }
     if (d === '.'){
       if (!current.includes('.')) current += '.';
       update(); return;
@@ -198,14 +180,12 @@
   }
 
   function applyPercent(){
-    // convert only the current number to percent
     const num = parseFloat(current || '0');
     current = (num/100).toString();
     update();
   }
 
   function pushOperator(op){
-    // if just pressed operator, replace it
     if (lastPressedOp){
       expr = expr.slice(0, -1) + op;
     } else {
@@ -217,7 +197,6 @@
   }
 
   function sanitize(s){
-    // replace pretty ops to JS ops, keep digits . and operators
     return s
       .replace(/×/g,'*')
       .replace(/÷/g,'/')
@@ -225,17 +204,21 @@
   }
 
   function evaluateNow(){
+    if (trickMode){
+      current = "Hello World";
+      expr = '';
+      update();
+      return;
+    }
+
     let toEval = expr + current;
     if (!toEval) return;
-    // prevent trailing operator
     if (ops.has(toEval.slice(-1))) toEval = toEval.slice(0,-1);
 
     try{
       const safe = sanitize(toEval);
-      // allow only digits, operators, dot, parentheses (though we don't use them)
       if (!/^[0-9+\-*/. ]+$/.test(safe)) throw new Error('invalid');
       let ans = Function(`"use strict";return (${safe})`)();
-      // fix floating errors
       ans = Math.round((ans + Number.EPSILON) * 1e12)/1e12;
       expr = '';
       current = ans.toString();
@@ -244,19 +227,24 @@
     }catch(e){
       current = 'Error';
       expr = '';
-      lastPressedOp = false;
       update();
-      setTimeout(clearAll, 900);
+      setTimeout(clearAll, 800);
     }
   }
 
-  // Button events
   document.addEventListener('click', (e)=>{
     const b = e.target.closest('.btn');
     if(!b) return;
 
     const val = b.getAttribute('data-val');
     const act = b.getAttribute('data-act');
+
+    // Trick toggle button
+    if (b === trickBtn){
+      trickMode = !trickMode;
+      trickBtn.classList.toggle('toggle-on', trickMode);
+      return;
+    }
 
     if (val){
       if (ops.has(val)) pushOperator(val);
@@ -267,21 +255,6 @@
     if (act === 'BACK') return backspace();
     if (act === '%') return applyPercent();
     if (act === '=') return evaluateNow();
-  });
-
-  // Basic keyboard support (optional)
-  document.addEventListener('keydown', (e)=>{
-    const k = e.key;
-    if (/\d/.test(k)) return appendDigit(k);
-    if (k === '.') return appendDigit('.');
-    if (k === 'Backspace') return backspace();
-    if (k === 'Escape') return clearAll();
-    if (k === 'Enter' || k === '=') return evaluateNow();
-    if (k === '+' || k === '-' || k === '*' || k === '/'){
-      const map = {'+':'+','-':'−','*':'×','/':'÷'};
-      return pushOperator(map[k]);
-    }
-    if (k === '%') return applyPercent();
   });
 
   update();
